@@ -19,7 +19,7 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     },
-    fullName: {
+    fullname: {
       type: String,
       required: true,
       trim: true,
@@ -46,14 +46,22 @@ const userSchema = new Schema(
       type: String,
     },
   },
-  { timestamps: true, versionKey: true, minimize: true, capped: true }
+  {
+    timestamps: true,
+    skipVersioning: true,
+    minimize: true,
+    capped: false,
+    suppressReservedKeysWarning: true,
+    versionKey: false,
+  }
 );
 
 userSchema.pre("save", async function (next) {
-  if (!this.modified("password")) {
+  if (!this.isModified("password")) {
     return next();
   }
-  this.password = bcrypt.hash(this.password, 10);
+
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
